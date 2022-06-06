@@ -8,7 +8,7 @@ def Transformada(datos : ndarray, cantidadFrecuencias : int) -> ndarray:
         modulo = linalg.norm(vector)
         frecuencias.append((modulo, posicion))
 
-    frecuenciasRelevantes = frecuencias[:len(frecuencias)//2]
+    frecuenciasImportantes = frecuencias[1:len(frecuencias)//2]
 
-    frecuenciasRelevantes.sort(reverse = True, key = lambda valor: valor[0])
-    return array(frecuenciasRelevantes[:cantidadFrecuencias])
+    frecuenciasImportantes.sort(reverse = True, key = lambda valor: valor[0])
+    return array(frecuenciasImportantes[:cantidadFrecuencias])
