@@ -19,7 +19,7 @@ def CalcularPeriodo(periodoEnMinutos : float64):
 
 def Main():
     listaDeDatos = LeerArchivo(datosSeisMinutosArchivo)
-    #MostrarDatos(lista, 1/(10 * 24), "Datos en bruto de enero", "Dias", "Altura")
+    MostrarDatos(listaDeDatos, 1/(10 * 24), "Datos en bruto de enero", "Dias", "Altura")
     cantidadDeDatosEnMinutos = 31 * 24 * 10 * 6
     
     resultados = Transformada(listaDeDatos, 20)
