@@ -1,8 +1,10 @@
-from Configuracion import datosSeisMinutosArchivo, periodoConArchivoDeSeisMinutos
+from audioop import mul
+from Configuracion import datosSeisMinutosArchivo, datosUnaHoraArchivo, periodoConArchivoDeSeisMinutos
 from Plots import MostrarDatos
 from Transformacion import Transformada
 from Utilidades import LeerArchivo, GuardarCSV
-from numpy import float64
+from numpy import float64, ndarray, ones, cos, sin, square, array, multiply, pi
+from CuadradosMinimos import MinimosCuadrados, FuncionEstrella, ErrorCuadraticoMedio
 
 def CalcularPeriodo(periodoEnMinutos : float64):
     tipoDeDato = "min"
@@ -15,15 +17,16 @@ def CalcularPeriodo(periodoEnMinutos : float64):
             tipoDeDato = "dia"
             periodoEnMinutos /= 24
 
+            if periodoEnMinutos / 30 > 1:
+                tipoDeDato = "mes"
+                periodoEnMinutos /= 30
+
     return periodoEnMinutos, tipoDeDato
 
-def Main():
-    listaDeDatos = LeerArchivo(datosSeisMinutosArchivo)
-    MostrarDatos(listaDeDatos, 1/(10 * 24), "Datos en bruto de enero", "Dias", "Altura")
-    cantidadDeDatosEnMinutos = 31 * 24 * 10 * 6
-    
-    resultados = Transformada(listaDeDatos, 20)
-    #MostrarDatos(resultados, "Datos de la transformada", "Frecuencias", "Importancia")
+def MostrarNFrecuenciasImportantes(nombreArchivo : str, n : int, relacionDatoMinutos : int, crearCSV : bool):
+    listaDeDatos = LeerArchivo(nombreArchivo)
+    cantidadDeDatosEnMinutos = len(listaDeDatos) * relacionDatoMinutos    
+    resultados = Transformada(listaDeDatos, n)
 
     informacionDeLosDatos = ["Orden", "Periodo", "Tipo de periodo"]
     datos = []
@@ -37,8 +40,43 @@ def Main():
         datoIndividual = [orden, periodo, tipoDePeriodo]
         datos.append(datoIndividual)
     
-    GuardarCSV(periodoConArchivoDeSeisMinutos, datos, informacionDeLosDatos)        
-            
+    if crearCSV:
+        GuardarCSV(periodoConArchivoDeSeisMinutos, datos, informacionDeLosDatos)  
+
+
+def Main():
+    #MostrarNFrecuenciasImportantes(datosUnaHoraArchivo, 10, 60, False)
+    #MostrarNFrecuenciasImportantes(datosSeisMinutosArchivo, 10, 6, False)
+
+    datosX = []
+    datosY = LeerArchivo(datosSeisMinutosArchivo)
+    separacion = 1
+    cantidadDeFunciones = 4
+
+    for i in range(len(datosY)):
+        datosX.append(i * separacion)
+
+    cantidadDatos = len(datosY)   
+    frecuenciasImportantes = Transformada(datosY, cantidadDeFunciones)
+
+    funcionesPhi = [lambda x : multiply(ones(cantidadDatos), 1/2)]
+    for frecuencia in frecuenciasImportantes:
+        orden = int(frecuencia[1])
+        print(orden)
+        funcionCos = lambda x, orden = orden : cos(multiply((2 * pi * orden) / cantidadDatos, x))
+        funcionSin = lambda x, orden = orden : sin(multiply((2 * pi * orden) / cantidadDatos, x))
+
+        funcionesPhi.append(funcionCos)
+        funcionesPhi.append(funcionSin)
+
+    vectorC = MinimosCuadrados(funcionesPhi, datosX, datosY)
+
+    print(vectorC)
+
+    datosPredichos = FuncionEstrella(funcionesPhi, vectorC, datosX)
+    errorCuadraticoMedio = ErrorCuadraticoMedio(funcionesPhi, vectorC, datosX, datosY) 
+    print(f"El error cuadratico medio es: {errorCuadraticoMedio}")
+    MostrarDatos(datosPredichos, 1 / (10 * 24))
 
 if __name__ == "__main__":
     Main()

@@ -8,12 +8,12 @@ def Rango(inicio : float64, separacion : float64, cantidad : int) -> ndarray:
     return array(resultado)
 
 
-def MostrarDatos(datos : ndarray, separacion : float64, titulo = "", ejeX = "", ejeY = "", logX = False, logY = False):
+def MostrarDatos(datos : ndarray, separacion : float64, inicio = 0, titulo = "", ejeX = "", ejeY = "", logX = False, logY = False):
 
-    rango = Rango(0, separacion, len(datos))
+    rango = Rango(inicio, separacion, len(datos))
     Grafico(datos, rango, titulo, ejeX, ejeY, logX, logY)
 
-def MostrarDatos(parDatoPosicion : ndarray, titulo = "", ejeX = "", ejeY = "", logX = False, logY = False):
+def MostrarDatos2(parDatoPosicion : ndarray, titulo = "", ejeX = "", ejeY = "", logX = False, logY = False):
     
     rango = []
     datos = []
