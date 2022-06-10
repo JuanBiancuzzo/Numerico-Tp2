@@ -1,5 +1,4 @@
 from Configuracion import datosUnaHoraArchivo, datosSeisMinutosArchivo, periodoConArchivoDeSeisMinutos
-from Configuracion import datos6MinCazzFranco, datosHoraCazzFranco
 from Plots import MostrarDatos
 from Transformacion import Transformada
 from Utilidades import LeerArchivo, GuardarCSV
