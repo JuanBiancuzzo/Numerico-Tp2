@@ -22,13 +22,10 @@ def FuncionEstrella(funcionesPhi, pesos, datosX) -> ndarray:
 def CalculoDeLaMatriz(funcionesPhi, datosX):
     matriz = []
 
-    funcionesF = funcionesPhi
-    funcionesG = funcionesPhi
-
-    for i, funcionF in enumerate(funcionesF):
+    for i, funcionF in enumerate(funcionesPhi):
         fila = []
         resultadoF = funcionF(datosX)
-        for j, funcionG in enumerate(funcionesG):
+        for j, funcionG in enumerate(funcionesPhi):
             resultadoG = funcionG(datosX)
             resultado = matriz[j][i] if j < i else ProductoInterno(resultadoF, resultadoG)
             fila.append(resultado)

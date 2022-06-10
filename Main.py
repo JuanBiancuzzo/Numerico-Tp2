@@ -1,9 +1,8 @@
-from audioop import mul
-from Configuracion import datosSeisMinutosArchivo, datosUnaHoraArchivo, periodoConArchivoDeSeisMinutos
+from Configuracion import datosUnaHoraArchivo, periodoConArchivoDeSeisMinutos
 from Plots import MostrarDatos
 from Transformacion import Transformada
 from Utilidades import LeerArchivo, GuardarCSV
-from numpy import float64, ndarray, ones, cos, sin, square, array, multiply, pi
+from numpy import float64, ones, cos, sin, multiply, pi
 from CuadradosMinimos import MinimosCuadrados, FuncionEstrella, ErrorCuadraticoMedio
 
 def CalcularPeriodo(periodoEnMinutos : float64):
@@ -49,9 +48,9 @@ def Main():
     #MostrarNFrecuenciasImportantes(datosSeisMinutosArchivo, 10, 6, False)
 
     datosX = []
-    datosY = LeerArchivo(datosSeisMinutosArchivo)
+    datosY = LeerArchivo(datosUnaHoraArchivo)
     separacion = 1
-    cantidadDeFunciones = 4
+    cantidadDeFunciones = 20
 
     for i in range(len(datosY)):
         datosX.append(i * separacion)
@@ -76,7 +75,9 @@ def Main():
     datosPredichos = FuncionEstrella(funcionesPhi, vectorC, datosX)
     errorCuadraticoMedio = ErrorCuadraticoMedio(funcionesPhi, vectorC, datosX, datosY) 
     print(f"El error cuadratico medio es: {errorCuadraticoMedio}")
-    MostrarDatos(datosPredichos, 1 / (10 * 24))
+
+    MostrarDatos(datosY, 1 / (24))
+    MostrarDatos(datosPredichos, 1 / (24))
 
 if __name__ == "__main__":
     Main()
