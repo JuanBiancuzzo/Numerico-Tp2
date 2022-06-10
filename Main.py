@@ -1,8 +1,9 @@
-from Configuracion import datosUnaHoraArchivo, periodoConArchivoDeSeisMinutos
+from Configuracion import datosUnaHoraArchivo, datosSeisMinutosArchivo, periodoConArchivoDeSeisMinutos
+from Configuracion import datos6MinCazzFranco, datosHoraCazzFranco
 from Plots import MostrarDatos
 from Transformacion import Transformada
 from Utilidades import LeerArchivo, GuardarCSV
-from numpy import float64, ones, cos, sin, multiply, pi
+from numpy import float64, ndarray, ones, cos, sin, multiply, pi, arange, array
 from CuadradosMinimos import MinimosCuadrados, FuncionEstrella, ErrorCuadraticoMedio
 
 def CalcularPeriodo(periodoEnMinutos : float64):
@@ -40,44 +41,60 @@ def MostrarNFrecuenciasImportantes(nombreArchivo : str, n : int, relacionDatoMin
         datos.append(datoIndividual)
     
     if crearCSV:
-        GuardarCSV(periodoConArchivoDeSeisMinutos, datos, informacionDeLosDatos)  
+        nombreArchivoAGuardar = nombreArchivo[:-4] + "-frecuenciasImportantes.csv"
+        GuardarCSV(nombreArchivoAGuardar, datos, informacionDeLosDatos)  
 
-
-def Main():
-    #MostrarNFrecuenciasImportantes(datosUnaHoraArchivo, 10, 60, False)
-    #MostrarNFrecuenciasImportantes(datosSeisMinutosArchivo, 10, 6, False)
-
-    datosX = []
-    datosY = LeerArchivo(datosUnaHoraArchivo)
-    separacion = 1
-    cantidadDeFunciones = 20
-
-    for i in range(len(datosY)):
-        datosX.append(i * separacion)
-
-    cantidadDatos = len(datosY)   
-    frecuenciasImportantes = Transformada(datosY, cantidadDeFunciones)
-
-    funcionesPhi = [lambda x : multiply(ones(cantidadDatos), 1/2)]
+def PrediccionDeDatos(cantidadDeFrecuencias, datosX, datosY):
+    frecuenciasImportantes = Transformada(datosY, cantidadDeFrecuencias)
+    cantidadDeDatos = len(datosX)
+    funcionesPhi = [lambda x : multiply(ones(cantidadDeDatos), 1/2)]
     for frecuencia in frecuenciasImportantes:
         orden = int(frecuencia[1])
-        print(orden)
-        funcionCos = lambda x, orden = orden : cos(multiply((2 * pi * orden) / cantidadDatos, x))
-        funcionSin = lambda x, orden = orden : sin(multiply((2 * pi * orden) / cantidadDatos, x))
+        funcionCos = lambda x, orden = orden : cos(multiply((2 * pi * orden) / cantidadDeDatos, x))
+        funcionSin = lambda x, orden = orden : sin(multiply((2 * pi * orden) / cantidadDeDatos, x))
 
         funcionesPhi.append(funcionCos)
         funcionesPhi.append(funcionSin)
 
     vectorC = MinimosCuadrados(funcionesPhi, datosX, datosY)
 
-    print(vectorC)
-
     datosPredichos = FuncionEstrella(funcionesPhi, vectorC, datosX)
-    errorCuadraticoMedio = ErrorCuadraticoMedio(funcionesPhi, vectorC, datosX, datosY) 
-    print(f"El error cuadratico medio es: {errorCuadraticoMedio}")
+    errorCuadraticoMedio = ErrorCuadraticoMedio(funcionesPhi, vectorC, datosX, datosY)
 
-    MostrarDatos(datosY, 1 / (24))
-    MostrarDatos(datosPredichos, 1 / (24))
+    return datosPredichos, errorCuadraticoMedio 
+
+def Main():
+    #MostrarNFrecuenciasImportantes(datos6MinCazzFranco, 10, 60, True)
+    #MostrarNFrecuenciasImportantes(datosHoraCazzFranco, 10, 6, True)
+
+    datosY = LeerArchivo(datosUnaHoraArchivo)
+    cantidadDatos = len(datosY)   
+    datosX = arange(cantidadDatos)
+    cantidadDeFunciones = 1
+    predicciones, errorCuadraticoMedioAnterior = PrediccionDeDatos(cantidadDeFunciones, datosX, datosY)
+    print(f"3, 3: ECM: {errorCuadraticoMedioAnterior}")
+    cantidadDeFunciones += 1
+    predicciones, errorCuadraticoMedioActual = PrediccionDeDatos(cantidadDeFunciones, datosX, datosY)
+    print(f"5, 5: ECM: {errorCuadraticoMedioActual}")
+
+    #revisar
+    diferencia = abs(errorCuadraticoMedioActual - errorCuadraticoMedioAnterior) * 100
+
+    while diferencia > 5:
+
+        cantidadDeFunciones += 1
+        errorCuadraticoMedioAnterior = errorCuadraticoMedioActual
+        predicciones, errorCuadraticoMedioActual = PrediccionDeDatos(cantidadDeFunciones, datosX, datosY)
+        diferencia = abs(errorCuadraticoMedioActual - errorCuadraticoMedioAnterior) * 100
+
+        print(f"{1 + 2 * cantidadDeFunciones}, {1 + 2 * cantidadDeFunciones}: ECM: {errorCuadraticoMedioActual}")
+        
+
+    print(f"El error cuadratico medio es: {errorCuadraticoMedioActual}")
+    print(f"Cantidad de funciones: {cantidadDeFunciones}")
+
+    MostrarDatos(datosY, 1 / (10 * 24), titulo = "Original")
+    MostrarDatos(predicciones, 1 / (10 * 24), titulo = "Prediccion")
 
 if __name__ == "__main__":
     Main()
