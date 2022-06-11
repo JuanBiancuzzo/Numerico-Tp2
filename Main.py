@@ -1,8 +1,8 @@
-from Configuracion import datosUnaHoraArchivo, datosSeisMinutosArchivo, periodoConArchivoDeSeisMinutos
+from Configuracion import datosUnaHoraArchivo, datosSeisMinutosArchivo, periodoConArchivoDeSeisMinutos, porcentajeMinimo
 from Plots import MostrarDatos
 from Transformacion import Transformada
 from Utilidades import LeerArchivo, GuardarCSV
-from numpy import float64, ndarray, ones, cos, sin, multiply, pi, arange, array
+from numpy import float64, ones, cos, sin, multiply, pi, arange, array
 from CuadradosMinimos import MinimosCuadrados, FuncionEstrella, ErrorCuadraticoMedio
 
 def CalcularPeriodo(periodoEnMinutos : float64):
@@ -62,11 +62,14 @@ def PrediccionDeDatos(cantidadDeFrecuencias, datosX, datosY):
 
     return datosPredichos, errorCuadraticoMedio 
 
-def Main():
-    #MostrarNFrecuenciasImportantes(datos6MinCazzFranco, 10, 60, True)
-    #MostrarNFrecuenciasImportantes(datosHoraCazzFranco, 10, 6, True)
+def SeguirIterando(errorActual, errorAnterior, porcentaje):
+    return abs(errorActual - errorAnterior) / abs(errorActual) > porcentaje / 100 
 
-    datosY = LeerArchivo(datosUnaHoraArchivo)
+def Main():
+    #MostrarNFrecuenciasImportantes(datosSeisMinutosArchivo, 10, 60, True)
+    #MostrarNFrecuenciasImportantes(datosUnaHoraArchivo, 10, 6, True)
+
+    datosY = LeerArchivo(datosSeisMinutosArchivo)
     cantidadDatos = len(datosY)   
     datosX = arange(cantidadDatos)
     cantidadDeFunciones = 1
@@ -76,15 +79,11 @@ def Main():
     predicciones, errorCuadraticoMedioActual = PrediccionDeDatos(cantidadDeFunciones, datosX, datosY)
     print(f"5, 5: ECM: {errorCuadraticoMedioActual}")
 
-    #revisar
-    diferencia = abs(errorCuadraticoMedioActual - errorCuadraticoMedioAnterior) * 100
-
-    while diferencia > 5:
+    while SeguirIterando(errorCuadraticoMedioActual, errorCuadraticoMedioAnterior, porcentajeMinimo) and cantidadDeFunciones <= 20:
 
         cantidadDeFunciones += 1
         errorCuadraticoMedioAnterior = errorCuadraticoMedioActual
         predicciones, errorCuadraticoMedioActual = PrediccionDeDatos(cantidadDeFunciones, datosX, datosY)
-        diferencia = abs(errorCuadraticoMedioActual - errorCuadraticoMedioAnterior) * 100
 
         print(f"{1 + 2 * cantidadDeFunciones}, {1 + 2 * cantidadDeFunciones}: ECM: {errorCuadraticoMedioActual}")
         

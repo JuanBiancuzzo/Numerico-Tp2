@@ -4,3 +4,4 @@ periodoConArchivoDeSeisMinutos = "Datos\PeriodoConArchivoDeSeisMinutos.csv"
 caracterSeparador = ","
 lineasASaltear = 1
 columaAUsar = 4
+porcentajeMinimo = 5
