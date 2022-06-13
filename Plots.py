@@ -13,16 +13,6 @@ def MostrarDatos(datos : ndarray, separacion : float64, inicio = 0, titulo = "",
     rango = Rango(inicio, separacion, len(datos))
     Grafico(datos, rango, titulo, ejeX, ejeY, logX, logY)
 
-def MostrarDatos2(parDatoPosicion : ndarray, titulo = "", ejeX = "", ejeY = "", logX = False, logY = False):
-    
-    rango = []
-    datos = []
-    for par in parDatoPosicion:
-        datos.append(par[0])
-        rango.append(par[1])
-
-    Grafico(datos, rango, titulo, ejeX, ejeY, logX, logY)
-
 
 def Grafico(datos : ndarray, rango : ndarray, titulo = "", ejeX = "", ejeY = "", logX = False, logY = False):
     fig = pyplot.figure()

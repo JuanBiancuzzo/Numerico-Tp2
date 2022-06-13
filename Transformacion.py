@@ -1,6 +1,6 @@
 from numpy import fft, ndarray, linalg, array
 
-def Transformada(datos : ndarray, cantidadFrecuencias : int) -> ndarray:
+def FrecuenciasAngularesOrdenadasPorImportancia(datos : ndarray) -> ndarray:
     vectoresComplejos = fft.fft(datos)
     frecuencias = []
 
@@ -11,4 +11,4 @@ def Transformada(datos : ndarray, cantidadFrecuencias : int) -> ndarray:
     frecuenciasImportantes = frecuencias[1:len(frecuencias)//2]
 
     frecuenciasImportantes.sort(reverse = True, key = lambda valor: valor[0])
-    return array(frecuenciasImportantes[:cantidadFrecuencias])
+    return array(frecuenciasImportantes)

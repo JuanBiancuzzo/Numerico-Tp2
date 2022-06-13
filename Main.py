@@ -1,8 +1,8 @@
 from Configuracion import datosUnaHoraArchivo, datosSeisMinutosArchivo, periodoConArchivoDeSeisMinutos, porcentajeMinimo
 from Plots import MostrarDatos
-from Transformacion import Transformada
+from Transformacion import FrecuenciasAngularesOrdenadasPorImportancia
 from Utilidades import LeerArchivo, GuardarCSV
-from numpy import float64, ones, cos, sin, multiply, pi, arange, array
+from numpy import float64, ones, cos, sin, multiply, pi, arange, arctan
 from CuadradosMinimos import MinimosCuadrados, FuncionEstrella, ErrorCuadraticoMedio
 
 def CalcularPeriodo(periodoEnMinutos : float64):
@@ -25,7 +25,7 @@ def CalcularPeriodo(periodoEnMinutos : float64):
 def MostrarNFrecuenciasImportantes(nombreArchivo : str, n : int, relacionDatoMinutos : int, crearCSV : bool):
     listaDeDatos = LeerArchivo(nombreArchivo)
     cantidadDeDatosEnMinutos = len(listaDeDatos) * relacionDatoMinutos    
-    resultados = Transformada(listaDeDatos, n)
+    resultados = FrecuenciasAngularesOrdenadasPorImportancia(listaDeDatos)[:n]
 
     informacionDeLosDatos = ["Orden", "Periodo", "Tipo de periodo"]
     datos = []
@@ -44,7 +44,7 @@ def MostrarNFrecuenciasImportantes(nombreArchivo : str, n : int, relacionDatoMin
         GuardarCSV(nombreArchivoAGuardar, datos, informacionDeLosDatos)  
 
 def PrediccionDeDatos(cantidadDeFrecuencias, datosX, datosY):
-    frecuenciasImportantes = Transformada(datosY, cantidadDeFrecuencias)
+    frecuenciasImportantes = FrecuenciasAngularesOrdenadasPorImportancia(datosY)[:cantidadDeFrecuencias]
     cantidadDeDatos = len(datosX)
     funcionesPhi = [lambda x : multiply(ones(cantidadDeDatos), 1/2)]
     for frecuencia in frecuenciasImportantes:
@@ -65,14 +65,37 @@ def PrediccionDeDatos(cantidadDeFrecuencias, datosX, datosY):
 def SeguirIterando(errorActual, errorAnterior, porcentaje):
     return abs(errorActual - errorAnterior) / abs(errorActual) > porcentaje / 100 
 
-def Main():
-    #MostrarNFrecuenciasImportantes(datosSeisMinutosArchivo, 10, 60, True)
-    #MostrarNFrecuenciasImportantes(datosUnaHoraArchivo, 10, 6, True)
 
+def CalculoDeAmplitudYFase(amplitudCoseno, amplitudSeno):
+    fase = arctan(-amplitudSeno/amplitudCoseno)
+    amplitud = amplitudCoseno/cos(fase)
+
+    return fase, amplitud
+
+def Main():
+    #MostrarNFrecuenciasImportantes(datosUnaHoraArchivo, 20, 60, True)
     datosY = LeerArchivo(datosSeisMinutosArchivo)
     cantidadDatos = len(datosY)   
     datosX = arange(cantidadDatos)
     cantidadDeFunciones = 1
+
+    frecuenciasImportantes = FrecuenciasAngularesOrdenadasPorImportancia(datosY)[:cantidadDeFunciones]  
+    cantidadDeDatos = len(datosX)
+    funcionesPhi = [lambda x : multiply(ones(cantidadDeDatos), 1/2)]
+    for frecuencia in frecuenciasImportantes:
+        orden = int(frecuencia[1])
+        funcionCos = lambda x, orden = orden : cos(multiply((2 * pi * orden) / cantidadDeDatos, x))
+        funcionSin = lambda x, orden = orden : sin(multiply((2 * pi * orden) / cantidadDeDatos, x))
+
+        funcionesPhi.append(funcionCos)
+        funcionesPhi.append(funcionSin)
+
+    vectorC = MinimosCuadrados(funcionesPhi, datosX, datosY)
+    amplitud, fase = CalculoDeAmplitudYFase(vectorC[1], vectorC[2])
+
+    print(f"posicion media: {vectorC[0]}, amplitud: {amplitud}, fase: {fase}")
+
+    '''
     predicciones, errorCuadraticoMedioAnterior = PrediccionDeDatos(cantidadDeFunciones, datosX, datosY)
     print(f"3, 3: ECM: {errorCuadraticoMedioAnterior}")
     cantidadDeFunciones += 1
@@ -92,7 +115,7 @@ def Main():
     print(f"Cantidad de funciones: {cantidadDeFunciones}")
 
     MostrarDatos(datosY, 1 / (10 * 24), titulo = "Original")
-    MostrarDatos(predicciones, 1 / (10 * 24), titulo = "Prediccion")
+    MostrarDatos(predicciones, 1 / (10 * 24), titulo = "Prediccion")'''
 
 if __name__ == "__main__":
     Main()
