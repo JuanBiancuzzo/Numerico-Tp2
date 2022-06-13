@@ -5,4 +5,6 @@ periodoConArchivoDeUnaHora = "Datos\PeriodoConArchivoDeUnaHora.csv"
 caracterSeparador = ","
 lineasASaltear = 1
 columaAUsar = 4
+minutosPorDatoEnArchivoSeisMinutos = 6
+minutosPorDatoenArchivoUnaHora = 60
 porcentajeMinimo = 5

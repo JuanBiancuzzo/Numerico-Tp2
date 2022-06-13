@@ -1,121 +1,144 @@
-from Configuracion import datosUnaHoraArchivo, datosSeisMinutosArchivo, periodoConArchivoDeSeisMinutos, porcentajeMinimo
-from Plots import MostrarDatos
+from matplotlib.pyplot import setp
+from numpy import multiply, ones, cos, sin, pi, arange
+from Configuracion import datosSeisMinutosArchivo, datosUnaHoraArchivo, minutosPorDatoEnArchivoSeisMinutos, minutosPorDatoenArchivoUnaHora, porcentajeMinimo
 from Transformacion import FrecuenciasAngularesOrdenadasPorImportancia
-from Utilidades import LeerArchivo, GuardarCSV
-from numpy import float64, ones, cos, sin, multiply, pi, arange, arctan
-from CuadradosMinimos import MinimosCuadrados, FuncionEstrella, ErrorCuadraticoMedio
+from Utilidades import LeerArchivo
+from CuadradosMinimos import MinimosCuadrados, CalculoDeAmplitudYFase, ErrorCuadraticoMedio
 
-def CalcularPeriodo(periodoEnMinutos : float64):
+def FuncinesPhi(frecuenciasImportantes, cantidadDeDatos):
+    funcionesPhi = [lambda x : multiply(ones(cantidadDeDatos), 1/2)]
+    for frecuencia in frecuenciasImportantes:
+        orden = int(frecuencia[1])
+        funcionCos = lambda x, orden = orden : cos(multiply((2 * pi * orden) / cantidadDeDatos, x))
+        funcionSin = lambda x, orden = orden : sin(multiply((2 * pi * orden) / cantidadDeDatos, x))
+
+        funcionesPhi.append(funcionCos)
+        funcionesPhi.append(funcionSin)    
+    return funcionesPhi
+
+def CalcularPeriodo(periodoEnMinutos):
     tipoDeDato = "min"
+    if periodoEnMinutos / 60 < 1:
+        return periodoEnMinutos, tipoDeDato
+    
+    periodoEnHora = periodoEnMinutos / 60
+    tipoDeDato = "hora"
+    if periodoEnHora / 24 < 1:
+        return periodoEnHora, tipoDeDato
 
-    if periodoEnMinutos / 60 > 1:
-        tipoDeDato = "hora"
-        periodoEnMinutos /= 60
+    periodoEnDia = periodoEnHora / 24
+    tipoDeDato = "dia"
+    if periodoEnDia / 30 < 1:
+        return periodoEnDia, tipoDeDato
 
-        if periodoEnMinutos / 24 > 1:
-            tipoDeDato = "dia"
-            periodoEnMinutos /= 24
+    periodoEnMes = periodoEnDia / 30
+    tipoDeDato = "mes"
+    return periodoEnMes, tipoDeDato
 
-            if periodoEnMinutos / 30 > 1:
-                tipoDeDato = "mes"
-                periodoEnMinutos /= 30
-
-    return periodoEnMinutos, tipoDeDato
-
-def MostrarNFrecuenciasImportantes(nombreArchivo : str, n : int, relacionDatoMinutos : int, crearCSV : bool):
-    listaDeDatos = LeerArchivo(nombreArchivo)
-    cantidadDeDatosEnMinutos = len(listaDeDatos) * relacionDatoMinutos    
-    resultados = FrecuenciasAngularesOrdenadasPorImportancia(listaDeDatos)[:n]
-
-    informacionDeLosDatos = ["Orden", "Periodo", "Tipo de periodo"]
-    datos = []
-    for resultado in resultados:
-        orden = int(resultado[1])
-        periodo = cantidadDeDatosEnMinutos / orden
+def MostrarFrecuenciasImportantes(frecuenciasImportantes, cantidadDeFrecuencias, cantidadDeDatos, minutosPorDato):
+    frecuencias = frecuenciasImportantes[:cantidadDeFrecuencias]
+    for frecuencia in frecuencias:
+        orden = int(frecuencia[1])
+        periodo = (cantidadDeDatos * minutosPorDato) / orden
         periodo, tipoDePeriodo = CalcularPeriodo(periodo)
 
         print(f"Orden: {orden}, con un periodo de {periodo} {tipoDePeriodo}")
 
-        datoIndividual = [orden, periodo, tipoDePeriodo]
-        datos.append(datoIndividual)
-    
-    if crearCSV:
-        nombreArchivoAGuardar = nombreArchivo[:-4] + "-frecuenciasImportantes.csv"
-        GuardarCSV(nombreArchivoAGuardar, datos, informacionDeLosDatos)  
+def DatosDeLaSerie(amplitudesDeLaSerie):
 
-def PrediccionDeDatos(cantidadDeFrecuencias, datosX, datosY):
-    frecuenciasImportantes = FrecuenciasAngularesOrdenadasPorImportancia(datosY)[:cantidadDeFrecuencias]
-    cantidadDeDatos = len(datosX)
-    funcionesPhi = [lambda x : multiply(ones(cantidadDeDatos), 1/2)]
-    for frecuencia in frecuenciasImportantes:
-        orden = int(frecuencia[1])
-        funcionCos = lambda x, orden = orden : cos(multiply((2 * pi * orden) / cantidadDeDatos, x))
-        funcionSin = lambda x, orden = orden : sin(multiply((2 * pi * orden) / cantidadDeDatos, x))
+    datosDeLaSerie = [amplitudesDeLaSerie[0]]
+    for i in range(1, len(amplitudesDeLaSerie[1:]), 2):
+        amplitudCoseno = amplitudesDeLaSerie[i]
+        amplitudSeno = amplitudesDeLaSerie[i + 1]
 
-        funcionesPhi.append(funcionCos)
-        funcionesPhi.append(funcionSin)
+        amplitud, fase = CalculoDeAmplitudYFase(amplitudCoseno, amplitudSeno)
+        datosDeLaSerie.append(amplitud)
+        datosDeLaSerie.append(fase)
 
-    vectorC = MinimosCuadrados(funcionesPhi, datosX, datosY)
+    return datosDeLaSerie
 
-    datosPredichos = FuncionEstrella(funcionesPhi, vectorC, datosX)
-    errorCuadraticoMedio = ErrorCuadraticoMedio(funcionesPhi, vectorC, datosX, datosY)
+def MostrarDatosDeLaSerie(datosDeLaSerie):
+    print(f"Posicion media: {datosDeLaSerie[0]}")
+    for i in range(1, len(datosDeLaSerie[1:]), 2):
+        amplitud = datosDeLaSerie[i]
+        fase = datosDeLaSerie[i + 1]
+        posicion = (i + 1) // 2
+        amplitudCon3Digitos = "{0:.3f}".format(amplitud)
+        faseCon3Digitos = "{0:.3f}".format(fase)
+        print(f"Amplitud {posicion}: {amplitudCon3Digitos}, Fase {posicion}: {faseCon3Digitos}")
 
-    return datosPredichos, errorCuadraticoMedio 
+def CalculoDelError(cantidadDeTerminos, datosTiempo, datosAltura):
+    cantidadDeDatos = len(datosAltura)
+    frecuenciasImportantes = FrecuenciasAngularesOrdenadasPorImportancia(datosAltura)
+    funcinesPhi = FuncinesPhi(frecuenciasImportantes[:cantidadDeTerminos], cantidadDeDatos)
+    amplitudesSerie = MinimosCuadrados(funcinesPhi, datosTiempo, datosAltura)
+    return ErrorCuadraticoMedio(funcinesPhi, amplitudesSerie, datosTiempo, datosAltura)
+
+def MostrarErrorCuadraticoMedio(cantidadDeTerminos, errorCuadraticoMedio):
+    tamanioDeLaMatriz = 1 + 2 * cantidadDeTerminos
+    print(f"{tamanioDeLaMatriz}x{tamanioDeLaMatriz}: ECM: {errorCuadraticoMedio}")
 
 def SeguirIterando(errorActual, errorAnterior, porcentaje):
     return abs(errorActual - errorAnterior) / abs(errorActual) > porcentaje / 100 
 
-
-def CalculoDeAmplitudYFase(amplitudCoseno, amplitudSeno):
-    fase = arctan(-amplitudSeno/amplitudCoseno)
-    amplitud = amplitudCoseno/cos(fase)
-
-    return fase, amplitud
-
 def Main():
-    #MostrarNFrecuenciasImportantes(datosUnaHoraArchivo, 20, 60, True)
-    datosY = LeerArchivo(datosSeisMinutosArchivo)
-    cantidadDatos = len(datosY)   
-    datosX = arange(cantidadDatos)
-    cantidadDeFunciones = 1
+    print("Parte 1) \n\tDatos del mes\n")
 
-    frecuenciasImportantes = FrecuenciasAngularesOrdenadasPorImportancia(datosY)[:cantidadDeFunciones]  
-    cantidadDeDatos = len(datosX)
-    funcionesPhi = [lambda x : multiply(ones(cantidadDeDatos), 1/2)]
-    for frecuencia in frecuenciasImportantes:
-        orden = int(frecuencia[1])
-        funcionCos = lambda x, orden = orden : cos(multiply((2 * pi * orden) / cantidadDeDatos, x))
-        funcionSin = lambda x, orden = orden : sin(multiply((2 * pi * orden) / cantidadDeDatos, x))
+    datosAltura = LeerArchivo(datosSeisMinutosArchivo)
+    cantidadDeDatos = len(datosAltura)
+    datosTiempo = arange(cantidadDeDatos)
 
-        funcionesPhi.append(funcionCos)
-        funcionesPhi.append(funcionSin)
+    frecuenciasImportantes = FrecuenciasAngularesOrdenadasPorImportancia(datosAltura)
 
-    vectorC = MinimosCuadrados(funcionesPhi, datosX, datosY)
-    amplitud, fase = CalculoDeAmplitudYFase(vectorC[1], vectorC[2])
+    MostrarFrecuenciasImportantes(frecuenciasImportantes, 1, cantidadDeDatos, minutosPorDatoEnArchivoSeisMinutos)
 
-    print(f"posicion media: {vectorC[0]}, amplitud: {amplitud}, fase: {fase}")
+    funcionesPhi = FuncinesPhi(frecuenciasImportantes[:1], cantidadDeDatos)
+    amplitudesSerie = MinimosCuadrados(funcionesPhi, datosTiempo, datosAltura)
 
-    '''
-    predicciones, errorCuadraticoMedioAnterior = PrediccionDeDatos(cantidadDeFunciones, datosX, datosY)
-    print(f"3, 3: ECM: {errorCuadraticoMedioAnterior}")
-    cantidadDeFunciones += 1
-    predicciones, errorCuadraticoMedioActual = PrediccionDeDatos(cantidadDeFunciones, datosX, datosY)
-    print(f"5, 5: ECM: {errorCuadraticoMedioActual}")
+    datosDeLaSerie = DatosDeLaSerie(amplitudesSerie)
+    MostrarDatosDeLaSerie(datosDeLaSerie)
 
-    while SeguirIterando(errorCuadraticoMedioActual, errorCuadraticoMedioAnterior, porcentajeMinimo) and cantidadDeFunciones <= 20:
+    print("\nParte 2) \n\tDatos del año\n")
 
-        cantidadDeFunciones += 1
+    datosAltura = LeerArchivo(datosUnaHoraArchivo)
+    cantidadDeDatos = len(datosAltura)
+    datosTiempo = arange(cantidadDeDatos)
+
+    frecuenciasImportantes = FrecuenciasAngularesOrdenadasPorImportancia(datosAltura)
+
+    MostrarFrecuenciasImportantes(frecuenciasImportantes, 1, cantidadDeDatos, minutosPorDatoenArchivoUnaHora)
+
+    funcionesPhi = FuncinesPhi(frecuenciasImportantes[:1], cantidadDeDatos)
+    amplitudesSerie = MinimosCuadrados(funcionesPhi, datosTiempo, datosAltura)
+
+    datosDeLaSerie = DatosDeLaSerie(amplitudesSerie)
+    MostrarDatosDeLaSerie(datosDeLaSerie)
+
+    cantidadDeTerminos = 1
+    errorCuadraticoMedioAnterior = CalculoDelError(cantidadDeTerminos, datosTiempo, datosAltura)
+    MostrarErrorCuadraticoMedio(cantidadDeTerminos, errorCuadraticoMedioAnterior)
+    
+    cantidadDeTerminos += 1
+    errorCuadraticoMedioActual = CalculoDelError(cantidadDeTerminos, datosTiempo, datosAltura)
+    MostrarErrorCuadraticoMedio(cantidadDeTerminos, errorCuadraticoMedioActual)
+
+    while SeguirIterando(errorCuadraticoMedioActual, errorCuadraticoMedioAnterior, porcentajeMinimo) and cantidadDeTerminos <= 20:
+
+        cantidadDeTerminos += 1
         errorCuadraticoMedioAnterior = errorCuadraticoMedioActual
-        predicciones, errorCuadraticoMedioActual = PrediccionDeDatos(cantidadDeFunciones, datosX, datosY)
+        errorCuadraticoMedioActual = CalculoDelError(cantidadDeTerminos, datosTiempo, datosAltura)
+        MostrarErrorCuadraticoMedio(cantidadDeTerminos, errorCuadraticoMedioActual)
 
-        print(f"{1 + 2 * cantidadDeFunciones}, {1 + 2 * cantidadDeFunciones}: ECM: {errorCuadraticoMedioActual}")
-        
+    print(f"El error cuadratico medio de ", end = "")
+    MostrarErrorCuadraticoMedio(cantidadDeTerminos, errorCuadraticoMedioActual)
 
-    print(f"El error cuadratico medio es: {errorCuadraticoMedioActual}")
-    print(f"Cantidad de funciones: {cantidadDeFunciones}")
+    print("\nLa informacion final dio: ")
+    frecuenciasImportantes = FrecuenciasAngularesOrdenadasPorImportancia(datosAltura)
+    funcinesPhi = FuncinesPhi(frecuenciasImportantes[:cantidadDeTerminos], cantidadDeDatos)
+    amplitudesSerie = MinimosCuadrados(funcinesPhi, datosTiempo, datosAltura)
+    datosDeLaSerie = DatosDeLaSerie(amplitudesSerie)
+    MostrarDatosDeLaSerie(datosDeLaSerie)
 
-    MostrarDatos(datosY, 1 / (10 * 24), titulo = "Original")
-    MostrarDatos(predicciones, 1 / (10 * 24), titulo = "Prediccion")'''
 
 if __name__ == "__main__":
     Main()
