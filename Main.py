@@ -1,5 +1,4 @@
-from matplotlib.pyplot import setp
-from numpy import multiply, ones, cos, sin, pi, arange
+from numpy import arange
 from Configuracion import datosSeisMinutosArchivo, datosUnaHoraArchivo, minutosPorDatoEnArchivoSeisMinutos, minutosPorDatoenArchivoUnaHora, porcentajeMinimo
 from Transformacion import FrecuenciasAngularesOrdenadasPorImportancia, FuncinesPhi
 from Utilidades import LeerArchivo
@@ -31,7 +30,8 @@ def MostrarFrecuenciasImportantes(frecuenciasImportantes, cantidadDeFrecuencias,
         periodo = (cantidadDeDatos * minutosPorDato) / frecuenciaAngular
         periodo, tipoDePeriodo = CalcularPeriodo(periodo)
 
-        print(f"Frecuencia angular: {frecuenciaAngular}, con un periodo de {periodo} {tipoDePeriodo}")
+        periodoCon3Digitos = "{0:.3f}".format(periodo)
+        print(f"Frecuencia angular: {frecuenciaAngular}, con un periodo de {periodoCon3Digitos} {tipoDePeriodo}")
 
 def DatosDeLaSerie(amplitudesDeLaSerie):
 
@@ -66,7 +66,8 @@ def CalculoDelError(cantidadDeTerminos, datosTiempo, datosAltura):
 
 def MostrarErrorCuadraticoMedio(cantidadDeTerminos, errorCuadraticoMedio):
     tamanioDeLaMatriz = 1 + 2 * cantidadDeTerminos
-    print(f"{tamanioDeLaMatriz}x{tamanioDeLaMatriz}: ECM: {errorCuadraticoMedio}")
+    errorCon3Decimales = "{0:.3f}".format(errorCuadraticoMedio)
+    print(f"{tamanioDeLaMatriz}x{tamanioDeLaMatriz}: ECM: {errorCon3Decimales}")
 
 def SeguirIterando(errorActual, errorAnterior, porcentaje):
     return abs(errorActual - errorAnterior) / abs(errorActual) > porcentaje / 100 

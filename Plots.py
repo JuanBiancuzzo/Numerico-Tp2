@@ -113,7 +113,7 @@ def Main():
     
     prediccionAlturasMinutos = FuncionEstrella(funcionesPhi, amplitudesSerie, datosTiempo) 
 
-    GraficarDatos(datosAlturasHora, separacionHora, "Prediccion de las alturas en el\naño con 7 termino", "Tiempo (meses)", "Altura (metros)")
+    GraficarDatos(prediccionAlturasMinutos, separacionHora, "Prediccion de las alturas en el\naño con 7 termino", "Tiempo (meses)", "Altura (metros)")
 
     MostrarGraficos()
 
