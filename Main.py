@@ -1,20 +1,9 @@
 from matplotlib.pyplot import setp
 from numpy import multiply, ones, cos, sin, pi, arange
 from Configuracion import datosSeisMinutosArchivo, datosUnaHoraArchivo, minutosPorDatoEnArchivoSeisMinutos, minutosPorDatoenArchivoUnaHora, porcentajeMinimo
-from Transformacion import FrecuenciasAngularesOrdenadasPorImportancia
+from Transformacion import FrecuenciasAngularesOrdenadasPorImportancia, FuncinesPhi
 from Utilidades import LeerArchivo
 from CuadradosMinimos import MinimosCuadrados, CalculoDeAmplitudYFase, ErrorCuadraticoMedio
-
-def FuncinesPhi(frecuenciasImportantes, cantidadDeDatos):
-    funcionesPhi = [lambda x : multiply(ones(cantidadDeDatos), 1/2)]
-    for frecuencia in frecuenciasImportantes:
-        orden = int(frecuencia[1])
-        funcionCos = lambda x, orden = orden : cos(multiply((2 * pi * orden) / cantidadDeDatos, x))
-        funcionSin = lambda x, orden = orden : sin(multiply((2 * pi * orden) / cantidadDeDatos, x))
-
-        funcionesPhi.append(funcionCos)
-        funcionesPhi.append(funcionSin)    
-    return funcionesPhi
 
 def CalcularPeriodo(periodoEnMinutos):
     tipoDeDato = "min"
@@ -38,11 +27,11 @@ def CalcularPeriodo(periodoEnMinutos):
 def MostrarFrecuenciasImportantes(frecuenciasImportantes, cantidadDeFrecuencias, cantidadDeDatos, minutosPorDato):
     frecuencias = frecuenciasImportantes[:cantidadDeFrecuencias]
     for frecuencia in frecuencias:
-        orden = int(frecuencia[1])
-        periodo = (cantidadDeDatos * minutosPorDato) / orden
+        frecuenciaAngular = int(frecuencia[1])
+        periodo = (cantidadDeDatos * minutosPorDato) / frecuenciaAngular
         periodo, tipoDePeriodo = CalcularPeriodo(periodo)
 
-        print(f"Orden: {orden}, con un periodo de {periodo} {tipoDePeriodo}")
+        print(f"Frecuencia angular: {frecuenciaAngular}, con un periodo de {periodo} {tipoDePeriodo}")
 
 def DatosDeLaSerie(amplitudesDeLaSerie):
 
@@ -58,7 +47,8 @@ def DatosDeLaSerie(amplitudesDeLaSerie):
     return datosDeLaSerie
 
 def MostrarDatosDeLaSerie(datosDeLaSerie):
-    print(f"Posicion media: {datosDeLaSerie[0]}")
+    posicionMedia3Digitos = "{0:.3f}".format(datosDeLaSerie[0])
+    print(f"Posicion media: {posicionMedia3Digitos}")
     for i in range(1, len(datosDeLaSerie[1:]), 2):
         amplitud = datosDeLaSerie[i]
         fase = datosDeLaSerie[i + 1]
@@ -138,7 +128,7 @@ def Main():
     amplitudesSerie = MinimosCuadrados(funcinesPhi, datosTiempo, datosAltura)
     datosDeLaSerie = DatosDeLaSerie(amplitudesSerie)
     MostrarDatosDeLaSerie(datosDeLaSerie)
-
+    MostrarFrecuenciasImportantes(frecuenciasImportantes, cantidadDeTerminos, cantidadDeDatos, minutosPorDatoenArchivoUnaHora)
 
 if __name__ == "__main__":
     Main()
