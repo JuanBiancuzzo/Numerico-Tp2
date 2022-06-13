@@ -21,7 +21,12 @@ def CalcularPeriodo(periodoEnMinutos):
 
     periodoEnMes = periodoEnDia / 30
     tipoDeDato = "mes"
-    return periodoEnMes, tipoDeDato
+    if periodoEnMes / 12 < 1:
+        return periodoEnMes, tipoDeDato
+
+    periodoEnAnio = periodoEnMes / 12
+    tipoDeDato = "año"
+    return periodoEnAnio, tipoDeDato
 
 def MostrarFrecuenciasImportantes(frecuenciasImportantes, cantidadDeFrecuencias, cantidadDeDatos, minutosPorDato):
     frecuencias = frecuenciasImportantes[:cantidadDeFrecuencias]
