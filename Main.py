@@ -78,16 +78,20 @@ def Main():
     datosAltura = LeerArchivo(datosSeisMinutosArchivo)
     cantidadDeDatos = len(datosAltura)
     datosTiempo = arange(cantidadDeDatos)
+    cantidadDeTerminos = 1
 
     frecuenciasImportantes = FrecuenciasAngularesOrdenadasPorImportancia(datosAltura)
 
-    MostrarFrecuenciasImportantes(frecuenciasImportantes, 1, cantidadDeDatos, minutosPorDatoEnArchivoSeisMinutos)
+    MostrarFrecuenciasImportantes(frecuenciasImportantes, cantidadDeTerminos, cantidadDeDatos, minutosPorDatoEnArchivoSeisMinutos)
 
-    funcionesPhi = FuncinesPhi(frecuenciasImportantes[:1], cantidadDeDatos)
+    funcionesPhi = FuncinesPhi(frecuenciasImportantes[:cantidadDeTerminos], cantidadDeDatos)
     amplitudesSerie = MinimosCuadrados(funcionesPhi, datosTiempo, datosAltura)
 
     datosDeLaSerie = DatosDeLaSerie(amplitudesSerie)
     MostrarDatosDeLaSerie(datosDeLaSerie)
+
+    errorCuadraticoMedio = CalculoDelError(cantidadDeTerminos, datosTiempo, datosAltura)
+    MostrarErrorCuadraticoMedio(cantidadDeTerminos, errorCuadraticoMedio)
 
     print("\nParte 2) \n\tDatos del año\n")
 
