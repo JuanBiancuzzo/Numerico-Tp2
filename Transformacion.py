@@ -1,10 +1,5 @@
 from numpy import fft, ndarray, linalg, array, multiply, ones, cos, sin, pi
 
-def FrecuenciasAngularesOrdenadasPorImportancia(datos : ndarray) -> ndarray:
-    frecuenciasImportantes = FrecuenciasAngulares(datos)[1:]
-    frecuenciasImportantes.sort(reverse = True, key = lambda valor: valor[0])
-    return array(frecuenciasImportantes)
-
 def FrecuenciasAngulares(datos : ndarray) -> ndarray:
     vectoresComplejos = fft.fft(datos)
     frecuencias = []
@@ -14,6 +9,11 @@ def FrecuenciasAngulares(datos : ndarray) -> ndarray:
         frecuencias.append((modulo, posicion))
 
     return frecuencias[:len(frecuencias)//2]
+
+def FrecuenciasAngularesOrdenadasPorImportancia(datos : ndarray) -> ndarray:
+    frecuenciasImportantes = FrecuenciasAngulares(datos)[1:]
+    frecuenciasImportantes.sort(reverse = True, key = lambda valor: valor[0])
+    return array(frecuenciasImportantes)
 
 def FuncinesPhi(frecuenciasImportantes, cantidadDeDatos):
     funcionesPhi = [lambda x : multiply(ones(cantidadDeDatos), 1/2)]

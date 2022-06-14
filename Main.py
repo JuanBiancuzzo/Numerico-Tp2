@@ -106,15 +106,14 @@ def Main():
 
     frecuenciasImportantes = FrecuenciasAngularesOrdenadasPorImportancia(datosAltura)
 
-    MostrarFrecuenciasImportantes(frecuenciasImportantes, 1, cantidadDeDatos, minutosPorDatoenArchivoUnaHora)
+    MostrarFrecuenciasImportantes(frecuenciasImportantes, cantidadDeTerminos, cantidadDeDatos, minutosPorDatoenArchivoUnaHora)
 
-    funcionesPhi = FuncinesPhi(frecuenciasImportantes[:1], cantidadDeDatos)
+    funcionesPhi = FuncinesPhi(frecuenciasImportantes[:cantidadDeTerminos], cantidadDeDatos)
     amplitudesSerie = MinimosCuadrados(funcionesPhi, datosTiempo, datosAltura)
 
     datosDeLaSerie = DatosDeLaSerie(amplitudesSerie)
     MostrarDatosDeLaSerie(datosDeLaSerie)
 
-    cantidadDeTerminos = 1
     errorCuadraticoMedioAnterior = CalculoDelError(cantidadDeTerminos, datosTiempo, datosAltura)
     MostrarErrorCuadraticoMedio(cantidadDeTerminos, errorCuadraticoMedioAnterior)
     

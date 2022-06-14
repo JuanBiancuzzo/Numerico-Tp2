@@ -20,7 +20,7 @@ def FuncionEstrella(funcionesPhi, pesos, datosX) -> ndarray:
     for i, funcionPhi in enumerate(funcionesPhi):
         resultado = multiply(funcionPhi(datosX), pesos[i])
         datosProcesados = resultado if datosProcesados.size == 0 else add(datosProcesados, resultado) 
-    return datosProcesados  
+    return datosProcesados
 
 def CalculoDeAmplitudYFase(amplitudCoseno, amplitudSeno):
     fase = arctan(-amplitudSeno/amplitudCoseno)
@@ -30,7 +30,6 @@ def CalculoDeAmplitudYFase(amplitudCoseno, amplitudSeno):
 
 def CalculoDeLaMatriz(funcionesPhi, datosX):
     matriz = []
-
     for i, funcionF in enumerate(funcionesPhi):
         fila = []
         resultadoF = funcionF(datosX)
