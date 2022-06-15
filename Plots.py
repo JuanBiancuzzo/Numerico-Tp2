@@ -83,9 +83,7 @@ def Main():
     
     MostrarGraficos()
 
-    # Comparacion entre datos y prediccion
-
-    GraficarDatos(datosAlturasMinutos, separacionMinutos, "Datos en bruto de las alturas \n en el mes de enero", "Tiempo (dias)", "Altura (metros)")        
+    # Comparacion entre datos y prediccion       
 
     cantidadDeDatos = len(datosAlturasMinutos)
     datosTiempo = arange(cantidadDeDatos)
@@ -96,12 +94,11 @@ def Main():
     amplitudesSerie = MinimosCuadrados(funcionesPhi, datosTiempo, datosAlturasMinutos)
     
     prediccionAlturasMinutos = FuncionEstrella(funcionesPhi, amplitudesSerie, datosTiempo)
+    comparacionAlturasDelMes = [*(datosAlturasMinutos[:cantidadDeDatos//2]), *(prediccionAlturasMinutos[:cantidadDeDatos//2])]
     
-    GraficarDatos(prediccionAlturasMinutos, separacionMinutos, "Prediccion de las alturas en el\nmes de enero con un solo termino", "Tiempo (dias)", "Altura (metros)")
+    GraficarDatos(comparacionAlturasDelMes, separacionMinutos, "Comparacion datos bruto y prediccion\nmes de enero con un solo termino", "Tiempo (dias)", "Altura (metros)")
 
     MostrarGraficos()
-
-    GraficarDatos(datosAlturasHora, separacionHora, "Datos en bruto de las alturas \n en todo el año", "Tiempo (meses)", "Altura (metros)")
     
     cantidadDeDatos = len(datosAlturasHora)
     datosTiempo = arange(cantidadDeDatos)
@@ -111,9 +108,10 @@ def Main():
     funcionesPhi = FuncinesPhi(frecuenciasImportantes[:7], cantidadDeDatos)
     amplitudesSerie = MinimosCuadrados(funcionesPhi, datosTiempo, datosAlturasHora)
     
-    prediccionAlturasMinutos = FuncionEstrella(funcionesPhi, amplitudesSerie, datosTiempo) 
+    prediccionAlturasHoras = FuncionEstrella(funcionesPhi, amplitudesSerie, datosTiempo) 
+    comparacionAlturasDelAnio = [*(datosAlturasHora[:cantidadDeDatos//2]), *(prediccionAlturasHoras[:cantidadDeDatos//2])]
 
-    GraficarDatos(prediccionAlturasMinutos, separacionHora, "Prediccion de las alturas en el\naño con 7 termino", "Tiempo (meses)", "Altura (metros)")
+    GraficarDatos(comparacionAlturasDelAnio, separacionHora, "Comparacion datos bruto y prediccion\naño con 7 termino", "Tiempo (meses)", "Altura (metros)")
 
     MostrarGraficos()
 
